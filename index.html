@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Hub – Mes Sites</title>
+  <style>
+    /* ===== RESET & BASE ===== */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #1a0a2e;
+      background-image: var(--bg-image, none);
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      transition: background-image 0.5s ease, background-color 0.5s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Overlay semi-transparent pour lisibilité */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background: rgba(10, 5, 25, 0.45);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* ===== CONTENEUR PRINCIPAL ===== */
+    .hub {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 3rem;
+      padding: 2rem 1rem;
+      width: 100%;
+      max-width: 1100px;
+    }
+
+    /* ===== TITRE ===== */
+    .hub-title {
+      font-size: clamp(1.4rem, 4vw, 2.2rem);
+      font-weight: 700;
+      color: #fff;
+      text-align: center;
+      letter-spacing: 0.06em;
+      text-shadow: 0 0 18px rgba(180, 100, 255, 0.8), 0 2px 8px rgba(0,0,0,0.6);
+    }
+
+    /* ===== GRILLE DES BOUTONS ===== */
+    .buttons-grid {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 2.5rem;
+    }
+
+    /* ===== BOUTON-IMAGE ===== */
+    .site-btn {
+      display: block;
+      width: clamp(200px, 28vw, 300px);
+      aspect-ratio: 1 / 1;
+      border-radius: 50%;
+      overflow: hidden;
+      cursor: pointer;
+      text-decoration: none;
+      border: 3px solid rgba(255,255,255,0.15);
+      box-shadow:
+        0 0 20px rgba(150, 80, 255, 0.5),
+        0 0 50px rgba(100, 50, 200, 0.25);
+      transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+      position: relative;
+    }
+
+    .site-btn img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      transition: transform 0.4s ease;
+    }
+
+    .site-btn:hover {
+      transform: scale(1.08) translateY(-6px);
+      box-shadow:
+        0 0 35px rgba(200, 120, 255, 0.8),
+        0 0 70px rgba(150, 80, 255, 0.4);
+      border-color: rgba(255,255,255,0.5);
+    }
+
+    .site-btn:hover img {
+      transform: scale(1.05);
+    }
+
+    /* Anneau lumineux animé au survol */
+    .site-btn::after {
+      content: '';
+      position: absolute;
+      inset: -4px;
+      border-radius: 50%;
+      background: conic-gradient(
+        from 0deg,
+        transparent 0%,
+        rgba(180, 100, 255, 0.6) 25%,
+        rgba(100, 180, 255, 0.6) 50%,
+        rgba(255, 120, 80, 0.6) 75%,
+        transparent 100%
+      );
+      opacity: 0;
+      transition: opacity 0.3s ease;
+      animation: spin 3s linear infinite;
+      z-index: -1;
+    }
+
+    .site-btn:hover::after {
+      opacity: 1;
+    }
+
+    @keyframes spin {
+      from { transform: rotate(0deg); }
+      to   { transform: rotate(360deg); }
+    }
+
+    /* ===== PANNEAU DE PERSONNALISATION DU FOND ===== */
+    .bg-panel {
+      position: fixed;
+      bottom: 1.2rem;
+      right: 1.2rem;
+      z-index: 100;
+      background: rgba(20, 10, 40, 0.85);
+      border: 1px solid rgba(180, 100, 255, 0.4);
+      border-radius: 16px;
+      padding: 0.9rem 1.2rem;
+      backdrop-filter: blur(12px);
+      box-shadow: 0 4px 24px rgba(0,0,0,0.5);
+      display: flex;
+      flex-direction: column;
+      gap: 0.7rem;
+      min-width: 200px;
+    }
+
+    .bg-panel summary {
+      list-style: none;
+      cursor: pointer;
+      font-size: 0.85rem;
+      color: #c8a0ff;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      user-select: none;
+    }
+
+    .bg-panel summary::before {
+      content: '🎨';
+      font-size: 1rem;
+    }
+
+    .bg-panel[open] summary::before { content: '✕'; font-style: normal; }
+
+    .bg-options {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      margin-top: 0.3rem;
+    }
+
+    .bg-label {
+      font-size: 0.75rem;
+      color: #a080cc;
+      margin-bottom: 0.15rem;
+    }
+
+    /* Palette de couleurs prédéfinies */
+    .color-swatches {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+    }
+
+    .swatch {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      cursor: pointer;
+      border: 2px solid transparent;
+      transition: transform 0.2s, border-color 0.2s;
+    }
+
+    .swatch:hover, .swatch.active {
+      transform: scale(1.2);
+      border-color: #fff;
+    }
+
+    /* Sélecteur de couleur libre */
+    .color-picker-row {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    input[type="color"] {
+      width: 36px;
+      height: 28px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      background: none;
+      padding: 0;
+    }
+
+    /* Upload d'image de fond */
+    .upload-row {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .upload-btn {
+      display: inline-block;
+      padding: 0.35rem 0.8rem;
+      background: rgba(150, 80, 255, 0.3);
+      color: #e0c8ff;
+      border-radius: 8px;
+      font-size: 0.75rem;
+      cursor: pointer;
+      border: 1px solid rgba(180, 100, 255, 0.4);
+      transition: background 0.2s;
+    }
+
+    .upload-btn:hover { background: rgba(150, 80, 255, 0.55); }
+
+    input[type="file"] { display: none; }
+
+    /* Bouton reset */
+    .reset-btn {
+      padding: 0.35rem 0.8rem;
+      background: rgba(255, 80, 80, 0.2);
+      color: #ffaaaa;
+      border-radius: 8px;
+      font-size: 0.75rem;
+      cursor: pointer;
+      border: 1px solid rgba(255, 80, 80, 0.35);
+      transition: background 0.2s;
+      text-align: center;
+    }
+
+    .reset-btn:hover { background: rgba(255, 80, 80, 0.4); }
+
+    /* Dégradés prédéfinis */
+    .gradient-swatches {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+    }
+
+    .grad-swatch {
+      width: 40px;
+      height: 28px;
+      border-radius: 6px;
+      cursor: pointer;
+      border: 2px solid transparent;
+      transition: transform 0.2s, border-color 0.2s;
+    }
+
+    .grad-swatch:hover, .grad-swatch.active {
+      transform: scale(1.15);
+      border-color: #fff;
+    }
+
+    /* ===== RESPONSIVE ===== */
+    @media (max-width: 600px) {
+      .buttons-grid { gap: 1.5rem; }
+      .bg-panel { bottom: 0.5rem; right: 0.5rem; min-width: 170px; }
+    }
+  </style>
+</head>
+<body>
+
+  <main class="hub">
+    <h1 class="hub-title">Mes Sites</h1>
+
+    <div class="buttons-grid">
+      <!-- Bouton FDR -->
+      <a class="site-btn" id="btn-fdr" href="#" target="_blank" rel="noopener" title="FDR">
+        <img src="images/fdr.jpeg" alt="FDR" />
+      </a>
+
+      <!-- Bouton Traces -->
+      <a class="site-btn" id="btn-traces" href="#" target="_blank" rel="noopener" title="Traces">
+        <img src="images/traces.jpeg" alt="Traces" />
+      </a>
+
+      <!-- Bouton Exercices -->
+      <a class="site-btn" id="btn-exercices" href="#" target="_blank" rel="noopener" title="Exercices">
+        <img src="images/exercices.jpeg" alt="Exercices" />
+      </a>
+    </div>
+  </main>
+
+  <!-- ===== PANNEAU FOND ===== -->
+  <details class="bg-panel" id="bgPanel">
+    <summary>Personnaliser le fond</summary>
+
+    <div class="bg-options">
+
+      <!-- Couleurs unies -->
+      <div class="bg-label">Couleur unie</div>
+      <div class="color-swatches" id="colorSwatches">
+        <div class="swatch" style="background:#1a0a2e" data-color="#1a0a2e" title="Violet nuit"></div>
+        <div class="swatch" style="background:#0a1a2e" data-color="#0a1a2e" title="Bleu nuit"></div>
+        <div class="swatch" style="background:#0d2b1a" data-color="#0d2b1a" title="Vert forêt"></div>
+        <div class="swatch" style="background:#2b0d0d" data-color="#2b0d0d" title="Rouge sombre"></div>
+        <div class="swatch" style="background:#1a1a1a" data-color="#1a1a1a" title="Anthracite"></div>
+        <div class="swatch" style="background:#0a0a0a" data-color="#0a0a0a" title="Noir"></div>
+        <div class="swatch" style="background:#ffffff" data-color="#ffffff" title="Blanc"></div>
+      </div>
+
+      <!-- Couleur libre -->
+      <div class="color-picker-row">
+        <div class="bg-label" style="margin:0">Couleur libre :</div>
+        <input type="color" id="colorPicker" value="#1a0a2e" title="Choisir une couleur" />
+      </div>
+
+      <!-- Dégradés -->
+      <div class="bg-label">Dégradé</div>
+      <div class="gradient-swatches" id="gradSwatches">
+        <div class="grad-swatch" style="background:linear-gradient(135deg,#1a0a2e,#0a1a4e)" data-grad="linear-gradient(135deg,#1a0a2e,#0a1a4e)" title="Violet-Bleu"></div>
+        <div class="grad-swatch" style="background:linear-gradient(135deg,#0d2b1a,#0a1a4e)" data-grad="linear-gradient(135deg,#0d2b1a,#0a1a4e)" title="Vert-Bleu"></div>
+        <div class="grad-swatch" style="background:linear-gradient(135deg,#2b0d1a,#1a0a2e)" data-grad="linear-gradient(135deg,#2b0d1a,#1a0a2e)" title="Rose-Violet"></div>
+        <div class="grad-swatch" style="background:linear-gradient(135deg,#0a2b2b,#1a0a2e)" data-grad="linear-gradient(135deg,#0a2b2b,#1a0a2e)" title="Cyan-Violet"></div>
+        <div class="grad-swatch" style="background:linear-gradient(135deg,#1a1a00,#0a1a2e)" data-grad="linear-gradient(135deg,#1a1a00,#0a1a2e)" title="Or-Bleu"></div>
+        <div class="grad-swatch" style="background:linear-gradient(135deg,#2b1a00,#1a0a2e)" data-grad="linear-gradient(135deg,#2b1a00,#1a0a2e)" title="Orange-Violet"></div>
+      </div>
+
+      <!-- Image personnalisée -->
+      <div class="bg-label">Image de fond</div>
+      <div class="upload-row">
+        <label class="upload-btn" for="bgImageInput">📁 Choisir une image</label>
+        <input type="file" id="bgImageInput" accept="image/*" />
+      </div>
+
+      <!-- Réinitialiser -->
+      <div class="reset-btn" id="resetBtn">↺ Réinitialiser</div>
+
+    </div>
+  </details>
+
+  <script>
+    // ===== CONFIGURATION DES LIENS (à modifier) =====
+    const LINKS = {
+      fdr:       '#',   // ← Remplacer par l'URL du site FDR
+      traces:    '#',   // ← Remplacer par l'URL du site Traces
+      exercices: '#'    // ← Remplacer par l'URL du site Exercices
+    };
+
+    document.getElementById('btn-fdr').href       = LINKS.fdr;
+    document.getElementById('btn-traces').href    = LINKS.traces;
+    document.getElementById('btn-exercices').href = LINKS.exercices;
+
+    // ===== GESTION DU FOND =====
+    const STORAGE_KEY = 'hub-bg';
+
+    function applyBackground(type, value) {
+      const body = document.body;
+      body.style.backgroundImage = 'none';
+      body.style.backgroundColor = '';
+
+      if (type === 'color') {
+        body.style.backgroundColor = value;
+        body.style.setProperty('--bg-image', 'none');
+      } else if (type === 'gradient') {
+        body.style.backgroundImage = value;
+        body.style.setProperty('--bg-image', value);
+      } else if (type === 'image') {
+        body.style.backgroundImage = `url('${value}')`;
+        body.style.setProperty('--bg-image', `url('${value}')`);
+      }
+
+      // Mise en évidence du swatch actif
+      document.querySelectorAll('.swatch, .grad-swatch').forEach(s => s.classList.remove('active'));
+
+      try { localStorage.setItem(STORAGE_KEY, JSON.stringify({ type, value })); } catch(e) {}
+    }
+
+    // Restaurer le fond sauvegardé
+    try {
+      const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
+      if (saved) applyBackground(saved.type, saved.value);
+    } catch(e) {}
+
+    // Swatches couleur unie
+    document.querySelectorAll('.swatch').forEach(swatch => {
+      swatch.addEventListener('click', () => {
+        applyBackground('color', swatch.dataset.color);
+        document.getElementById('colorPicker').value = swatch.dataset.color;
+        document.querySelectorAll('.swatch').forEach(s => s.classList.remove('active'));
+        swatch.classList.add('active');
+      });
+    });
+
+    // Sélecteur couleur libre
+    document.getElementById('colorPicker').addEventListener('input', e => {
+      applyBackground('color', e.target.value);
+      document.querySelectorAll('.swatch').forEach(s => s.classList.remove('active'));
+    });
+
+    // Swatches dégradés
+    document.querySelectorAll('.grad-swatch').forEach(swatch => {
+      swatch.addEventListener('click', () => {
+        applyBackground('gradient', swatch.dataset.grad);
+        document.querySelectorAll('.grad-swatch').forEach(s => s.classList.remove('active'));
+        swatch.classList.add('active');
+      });
+    });
+
+    // Upload image
+    document.getElementById('bgImageInput').addEventListener('change', e => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = ev => applyBackground('image', ev.target.result);
+      reader.readAsDataURL(file);
+    });
+
+    // Réinitialiser
+    document.getElementById('resetBtn').addEventListener('click', () => {
+      document.body.style.backgroundImage = 'none';
+      document.body.style.backgroundColor = '#1a0a2e';
+      document.querySelectorAll('.swatch, .grad-swatch').forEach(s => s.classList.remove('active'));
+      document.getElementById('colorPicker').value = '#1a0a2e';
+      try { localStorage.removeItem(STORAGE_KEY); } catch(e) {}
+    });
+  </script>
+
+</body>
+</html>
