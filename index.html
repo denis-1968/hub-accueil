@@ -132,6 +132,45 @@
       to   { transform: rotate(360deg); }
     }
 
+    /* ===== BOUTON RAFRAÎCHISSEMENT ===== */
+    .refresh-btn {
+      position: fixed;
+      top: 1.2rem;
+      right: 1.2rem;
+      z-index: 100;
+      width: 70px;
+      height: 70px;
+      border-radius: 50%;
+      overflow: hidden;
+      cursor: pointer;
+      border: none;
+      background: none;
+      padding: 0;
+      box-shadow: 0 0 16px rgba(80, 180, 200, 0.5);
+      transition: transform 0.4s ease, box-shadow 0.3s ease;
+    }
+
+    .refresh-btn img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      transition: transform 0.6s ease;
+    }
+
+    .refresh-btn:hover {
+      box-shadow: 0 0 28px rgba(80, 200, 220, 0.8);
+    }
+
+    .refresh-btn:hover img {
+      transform: rotate(360deg);
+    }
+
+    .refresh-btn:active img {
+      transform: rotate(720deg);
+      transition: transform 0.4s ease;
+    }
+
     /* ===== PANNEAU DE PERSONNALISATION DU FOND ===== */
     .bg-panel {
       position: fixed;
@@ -307,6 +346,11 @@
       </a>
     </div>
   </main>
+
+  <!-- ===== BOUTON RAFRAÎCHISSEMENT ===== -->
+  <button class="refresh-btn" onclick="location.reload()" title="Rafraîchir la page">
+    <img src="images/refresh.png" alt="Rafraîchir" />
+  </button>
 
   <!-- ===== PANNEAU FOND ===== -->
   <details class="bg-panel" id="bgPanel">
